@@ -1,5 +1,4 @@
 const IMAGES = [
-  '2015謹賀新年.jpg',
   'ALS栖川吟狼（翠梦Program）-201101-EMERALD ILLUSION封面.jpg',
   'ALS栖川吟狼（翠梦Program）-201101.jpg',
   'ALS栖川吟狼（翠梦Program）-201102.jpg',
@@ -8,7 +7,9 @@ const IMAGES = [
   'ALS栖川吟狼（翠梦Program）-201208-七夕.jpg',
   'ALS栖川吟狼（翠梦Program）-2013-EMERALD ILLISION Return封面.png',
   'ALS栖川吟狼（翠梦Program）-2015-圣诞节.jpg',
+  'ALS栖川吟狼（翠梦Program）-2015-謹賀新年.jpg',
   'ALS栖川吟狼（翠梦Program）-2015.jpg',
+  'ALS栖川吟狼（翠梦Program）-201501.jpg',
   'ALS栖川吟狼（翠梦Program）-2016-ハロウィン 01.jpg',
   'ALS栖川吟狼（翠梦Program）-2016-ハロウィン 02.jpg',
   'ALS栖川吟狼（翠梦Program）-2016-雪夜のサプライズ 01.jpg',
@@ -35,7 +36,6 @@ const IMAGES = [
   'ALS栖川吟狼（翠梦Program）-翠梦封面.jpg',
   'ALS栖川吟狼（翠梦Program）-翡翠之梦.jpg',
   'ALS栖川吟狼（翠梦Program）-翡翠色的回忆.png',
-  'ALS栖川吟狼（翠梦Program）.jpg',
   'ALS栖川吟狼（翠梦Program）翠梦小绿02.jpg',
   'Rvceric（翠梦Program）-2016-翠梦游戏立绘.jpg',
   '翠梦Program-歌琳·丹の陪睡DISCO 封面.webp',
