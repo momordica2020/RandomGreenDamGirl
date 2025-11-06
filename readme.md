@@ -2,7 +2,7 @@
 
 ## 网址
 
-[greendamgirl.icu](https://greendamgirl.icu)
+[greendam.icu](https://greendam.icu)
 
 ## 功能
 
