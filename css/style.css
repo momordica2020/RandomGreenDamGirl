@@ -1,0 +1,129 @@
+/* css/style.css —— 宽屏右侧悬浮 + 窄屏下方 + 完整显示 + 永不遮挡 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: #000;
+  color: #fff;
+  overflow-x: hidden;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+}
+
+/* === 核心布局：宽屏并排，窄屏堆叠 === */
+.content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  background: #000;
+  display: flex;
+  flex-direction: row;          /* 默认水平排列 */
+  align-items: flex-start;      /* 顶部对齐，防止拉伸 */
+  justify-content: center;      /* 整体居中 */
+  flex-wrap: wrap;              /* 允许换行 */
+}
+
+#randomImg {
+  width: 100%;
+  flex: 1 1 300px;              /* 可伸缩，最小 300px */
+  background: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-width: 100%;               /* 宽屏下最多占 70% */
+  height: auto;
+  object-fit: contain;
+  background: #000;
+  
+  /* 淡入动画 */
+  opacity: 0;
+  transform: scale(0.98);
+  transition: opacity 1.2s ease, transform 1.2s ease;
+}
+
+#randomImg.loaded {
+  opacity: 1;
+  transform: scale(1);
+}
+
+
+
+
+/* 信息盒子（右侧） */
+.info-box {
+  /*flex: 0 0 300px;              /* 固定宽度 320px，不伸缩 */
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(16px);
+  padding: 2rem 2.5rem;
+  align-self: center;           /* 垂直居中对齐图片 */
+}
+
+#meta1, #meta2 {
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+/* 按钮区域 */
+.btn-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  flex: 1 1 100%;               /* 窄屏时占满整行 */
+  order: 3;                     /* 确保在窄屏时排在最后 */
+}
+
+.btn {
+  padding: 18px 56px;
+  font-size: 1.5rem;
+  background: #06c79a7f;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-radius: 20px;
+  color: rgb(255, 255, 255);
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  transition: all 0.3s ease;
+}
+
+/* 
+@media (max-width: 992px) {
+  .content {
+    align-items: center;
+  }
+  
+  #randomImg {
+    max-width: 100%;
+    order: 1;
+  }
+  
+  .info-box {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 800px;
+    order: 2;
+    align-self: stretch;
+  }
+  
+  .btn-wrapper {
+    order: 3;
+  }
+}
+
+@media (max-width: 768px) {
+  #title {
+    font-size: 1.3rem;
+  }
+  .btn {
+    padding: 16px 48px;
+    font-size: 1.2rem;
+  }
+} */
