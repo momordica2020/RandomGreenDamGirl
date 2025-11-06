@@ -20,27 +20,18 @@
     const name = filename.replace(/\.[^.]+$/, ''); // 去掉后缀
     const parts = name.split('-');
 
-    let author = '佚名';
+    let author = '';
     let dateStr = '';
     let title = '';
 
     // 提取作者（永远是第一段）
     if (parts.length > 0) author = parts[0];
-
-    // 从后往前判断：最后一节是标题 → 倒数第二节是日期
-    if (parts.length >= 3) {
+    const second = parts[1];
+    if (/^\d{4,8}$/.test(second)) {
+      dateStr = second;
       title = parts.slice(2).join('-'); // 支持标题中带-的情况
-      dateStr = parts[1];
-    } else if (parts.length === 2) {
-      const second = parts[1];
-      // 判断第二段是日期还是标题（日期必须是纯数字）
-      if (/^\d{4,8}$/.test(second)) {
-        dateStr = second;
-      } else {
-        title = second;
-      }
-    } else if (parts.length === 1) {
-      title = parts[0]; // 只有标题
+    } else {
+      title = parts.slice(1).join('-'); // 支持标题中带-的情况
     }
 
     // 格式化日期（支持 2009 / 200903 / 20090323）
@@ -56,10 +47,11 @@
       }
     }
 
-    return { author, date: dateFormatted, title: title || '无标题' };
+    return { author, date: dateFormatted, title: title || '' };
   };
 
   const setRandomBackground = () => {
+    
     let index;
     do {
       index = Math.floor(Math.random() * IMAGES.length);
@@ -93,23 +85,25 @@
     }else{
       metaEl2.hidden = true;
     }
-    bgEl.classList.remove('loaded');
+    
     // 加载图片
+    bgEl.classList.remove('loaded');
     const img = new Image();
     img.onload = () => {
-      bgEl.classList.add('loaded');
-      trytime = 15;
-      bgEl.src= `${url}`;
-      lastIndex = index;
+      setTimeout(() => {
+        bgEl.src = url;
+        bgEl.classList.add('loaded');
+        trytime = 15;
+        lastIndex = index;
+      }, 200);
+
+
     };
     img.onerror = () => {
-      // titleEl.textContent = '小绿走丢了…';
-      // metaEl1.textContent = '请检查文件名或网络';
-      // metaEl2.textContent = ' ';
         setRandomBackground();
-      //bgEl.style.background = '#111';
     };
     img.src = url;
+    
     //console.log(`Loading image: ${img.src}`);
   };
 
