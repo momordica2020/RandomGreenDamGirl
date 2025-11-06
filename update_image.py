@@ -12,7 +12,7 @@ def green_dam_generate_js():
     extensions = {"*.jpg", "*.jpeg", "*.png", "*.gif", "*.bmp", "*.webp", "*.svg"}
     files = []
     for ext in extensions:
-        files.extend(Path(imgpath).rglob(ext))
+        files.extend(Path(imgpath).glob(ext))
 
     # 去重（不同大小写也算同一个）
     files = list({f.resolve(): f for f in files}.values())
