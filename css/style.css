@@ -29,8 +29,12 @@ body {
   align-items: flex-start;      /* 顶部对齐，防止拉伸 */
   justify-content: center;      /* 整体居中 */
   flex-wrap: wrap;              /* 允许换行 */
+  flex: 1; 
 }
-
+.site-footer {
+    text-align: center;
+    padding: 15px 0;
+}
 #randomImg {
   width: 100%;
   flex: 1 1 100%;    

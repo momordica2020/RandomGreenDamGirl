@@ -3,12 +3,14 @@
   
   // 示例图片（按你的规则命名即可）
   const IMAGES = window.IMAGES;
+  const RECORD = window.RECORD;
 
   const bgEl = document.getElementById('randomImg');
   const titleEl = document.getElementById('title');
   const metaEl1 = document.getElementById('meta1');
   const metaEl2 = document.getElementById('meta2');
   const btn = document.getElementById('changeBtn');
+  const record = document.getElementById('record');
 
   if (!bgEl || !titleEl || !metaEl1 || !metaEl2|| !btn) return;
 
@@ -69,6 +71,10 @@
     }else{
       titleEl.hidden= true;
     }
+	if(record)
+	{
+		record.textContent = `${RECORD.total}张图片，更新日期：${RECORD.date}`
+	}
     //titleEl.textContent = title;
     
     //const metaParts = [];
