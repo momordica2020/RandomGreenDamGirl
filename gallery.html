@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>绿坝娘图库</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="gallery-body">
+
+  <main class="gallery-page">
+    <header class="gallery-header">
+      <a class="back-link" href="index.html">返回随机</a>
+      <h1>绿坝娘图库</h1>
+      <span id="galleryCount" class="gallery-count"></span>
+    </header>
+
+    <div class="gallery-toolbar">
+      <input type="search" id="searchInput" placeholder="搜索标题、作者或日期…" autocomplete="off">
+      <label class="date-range">起始
+        <input type="number" id="dateFrom" min="2000" max="2026" placeholder="年份">
+      </label>
+      <label class="date-range">截止
+        <input type="number" id="dateTo" min="2000" max="2026" placeholder="年份">
+      </label>
+      <select id="sortSelect">
+        <option value="date-desc">日期新→旧</option>
+        <option value="date-asc">日期旧→新</option>
+        <option value="author">按作者</option>
+        <option value="name">按文件名</option>
+      </select>
+      <button id="filterToggle" class="btn-sm" type="button">作者筛选</button>
+    </div>
+
+    <div class="filter-panel" id="filterPanel" hidden>
+      <div class="filter-actions">
+        <button type="button" id="selectAll">全选</button>
+        <button type="button" id="clearAll">清空</button>
+      </div>
+      <div id="authorFilters" class="author-filters"></div>
+    </div>
+
+    <div id="galleryGrid" class="gallery-grid"></div>
+    <div id="emptyState" class="empty-state" hidden>没有找到符合条件的图片</div>
+  </main>
+
+  <!-- 全屏查看弹窗 -->
+  <div id="lightbox" class="lightbox" hidden>
+    <button id="lightboxClose" class="lb-close" type="button">×</button>
+    <button id="lightboxPrev" class="lb-nav lb-prev" type="button">‹</button>
+    <button id="lightboxNext" class="lb-nav lb-next" type="button">›</button>
+    <figure class="lb-content">
+      <img id="lightboxImg" src="" alt="">
+      <figcaption id="lightboxCaption" class="lb-caption"></figcaption>
+    </figure>
+  </div>
+
+  <script src="js/images.js"></script>
+  <script src="js/image-utils.js"></script>
+  <script src="js/gallery.js"></script>
+</body>
+</html>

@@ -1,8 +1,5 @@
 (() => {
-  const IMAGE_FOLDER = 'images/';
-  
-  // 示例图片（按你的规则命名即可）
-  const IMAGES = window.IMAGES;
+  const { IMAGE_FOLDER, IMAGES, parseFileName, imageUrl } = window.ImageData;
   const RECORD = window.RECORD;
 
   const bgEl = document.getElementById('randomImg');
@@ -17,41 +14,6 @@
   let lastIndex = -1;
   let trytime = 15;
 
-  // 解析文件名：作者-日期-标题.jpg
-  const parseFileName = (filename) => {
-    const name = filename.replace(/\.[^.]+$/, ''); // 去掉后缀
-    const parts = name.split('-');
-
-    let author = '';
-    let dateStr = '';
-    let title = '';
-
-    // 提取作者（永远是第一段）
-    if (parts.length > 0) author = parts[0];
-    const second = parts[1];
-    if (/^\d{4,8}$/.test(second)) {
-      dateStr = second;
-      title = parts.slice(2).join('-'); // 支持标题中带-的情况
-    } else {
-      title = parts.slice(1).join('-'); // 支持标题中带-的情况
-    }
-
-    // 格式化日期（支持 2009 / 200903 / 20090323）
-    let dateFormatted = '';
-    if (dateStr) {
-      const d = dateStr.replace(/[^\d]/g, ''); // 去掉非数字
-      if (d.length === 8) {
-        dateFormatted = `${d.slice(0,4)}年${d.slice(4,6)}月${d.slice(6,8)}日`;
-      } else if (d.length === 6) {
-        dateFormatted = `${d.slice(0,4)}年${d.slice(4,6)}月`;
-      } else if (d.length === 4) {
-        dateFormatted = `${d}年`;
-      }
-    }
-
-    return { author, date: dateFormatted, title: title || '' };
-  };
-
   const setRandomBackground = () => {
     
     let index;
@@ -61,7 +23,7 @@
     
 
     const file = IMAGES[index];
-    const url = encodeURI(IMAGE_FOLDER + file);
+    const url = imageUrl(file);
     const { author, date, title } = parseFileName(file);
 
     // 更新界面文字
