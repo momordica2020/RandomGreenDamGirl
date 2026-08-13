@@ -1,6 +1,6 @@
-// js/gallery.js —— 图库页：Pinterest 风格砖墙 + 搜索 + 作者/日期/标题筛选 + 全屏预览
+// js/gallery.js —— 图库页：Pinterest 风格砖墙 + 搜索 + 作者/日期/标题筛选 + 全屏预览 + 分页加载
 (() => {
-  const { IMAGE_FOLDER, IMAGE_DATA, imageUrl } = window.ImageData;
+  const { IMAGE_DATA, imageUrl } = window.ImageData;
   if (!IMAGE_DATA || !IMAGE_DATA.length) return;
 
   const gridEl = document.getElementById('galleryGrid');
@@ -14,12 +14,18 @@
   const filterToggle = document.getElementById('filterToggle');
   const authorBox = document.getElementById('authorFilters');
 
-  // 筛选状态：selectedAuthors 记录被取消勾选的作者（空集合 = 显示全部）
+  const PAGE_SIZE = 60; // 每次渲染的卡片数量
+
+  // 筛选状态
   const selectedAuthors = new Set();
   let searchText = '';
   let dateFrom = '';
   let dateTo = '';
   let sortKey = sortEl.value;
+
+  // 分页状态
+  let filteredList = [];
+  let renderedCount = 0;
 
   // 统计每个作者的作品数量
   const authorCount = new Map();
@@ -38,7 +44,7 @@
       const cb = document.createElement('input');
       cb.type = 'checkbox';
       cb.value = name;
-      cb.checked = true; // 默认全选
+      cb.checked = true;
       cb.addEventListener('change', () => toggleAuthor(name, cb.checked));
       const span = document.createElement('span');
       span.textContent = `${name}（${authorCount.get(name)}）`;
@@ -48,7 +54,6 @@
     });
   };
 
-  // 勾选/取消作者
   const toggleAuthor = (name, checked) => {
     if (checked) selectedAuthors.delete(name);
     else selectedAuthors.add(name);
@@ -86,18 +91,15 @@
     return card;
   };
 
-  // 计算当前过滤 + 排序后的数据
+  // 计算过滤 + 排序后的完整列表
   const getFiltered = () => {
     const kw = searchText.trim().toLowerCase();
     const from = dateFrom ? Number(dateFrom) : NaN;
     const to = dateTo ? Number(dateTo) : NaN;
     let list = IMAGE_DATA.filter(item => {
-      // 作者筛选：有选中即只显示这些作者
       if (selectedAuthors.size < authors.length && selectedAuthors.has(item.author || '未知')) return false;
-      // 日期范围筛选
       if (!Number.isNaN(from) && item.year && item.year < from) return false;
       if (!Number.isNaN(to) && item.year && item.year > to) return false;
-      // 关键词搜索：标题/作者/日期
       if (kw) {
         const haystack = `${item.title} ${item.author} ${item.date}`.toLowerCase();
         if (!haystack.includes(kw)) return false;
@@ -105,8 +107,7 @@
       return true;
     });
 
-    // 排序
-    list = list.slice().sort((a, b) => {
+    list = list.sort((a, b) => {
       switch (sortKey) {
         case 'date-asc':
           return (a.year || 0) - (b.year || 0) || a.file.localeCompare(b.file);
@@ -122,14 +123,53 @@
     return list;
   };
 
-  // 渲染网格
-  const render = () => {
-    const list = getFiltered();
-    gridEl.innerHTML = '';
-    list.forEach(item => gridEl.appendChild(createCard(item)));
-    countEl.textContent = `共 ${list.length} / ${IMAGE_DATA.length} 张`;
-    emptyEl.hidden = list.length > 0;
+  // 加载下一批卡片
+  const loadMore = () => {
+    if (renderedCount >= filteredList.length) return;
+    const frag = document.createDocumentFragment();
+    const end = Math.min(renderedCount + PAGE_SIZE, filteredList.length);
+    for (let i = renderedCount; i < end; i++) {
+      frag.appendChild(createCard(filteredList[i]));
+    }
+    gridEl.appendChild(frag);
+    renderedCount = end;
+    updateCount();
   };
+
+  // 更新计数
+  const updateCount = () => {
+    countEl.textContent = `共 ${filteredList.length} / ${IMAGE_DATA.length} 张（已加载 ${renderedCount}）`;
+  };
+
+  // 重新渲染：重置分页
+  const render = () => {
+    filteredList = getFiltered();
+    gridEl.innerHTML = '';
+    renderedCount = 0;
+    emptyEl.hidden = filteredList.length > 0;
+    if (filteredList.length > 0) loadMore();
+    else countEl.textContent = `共 0 / ${IMAGE_DATA.length} 张`;
+  };
+
+  // ==== IntersectionObserver 滚动加载 ====
+  const sentinel = document.createElement('div');
+  sentinel.id = 'scrollSentinel';
+  sentinel.style.height = '1px';
+  gridEl.parentNode.insertBefore(sentinel, gridEl.nextSibling);
+
+  const io = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting && renderedCount < filteredList.length) {
+      loadMore();
+    }
+  }, { rootMargin: '200px' });
+  io.observe(sentinel);
+
+  // 滚动事件兜底：当 body 作为滚动容器时 IntersectionObserver 可能不触发
+  window.addEventListener('scroll', () => {
+    if (renderedCount >= filteredList.length) return;
+    const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+    if (window.scrollY >= scrollable - 300) loadMore();
+  }, { passive: true });
 
   // ==== 全屏预览 ====
   const lightbox = document.getElementById('lightbox');
@@ -150,11 +190,11 @@
     if (item.date) parts.push(item.date);
     lightboxCaption.textContent = parts.join(' · ');
     lightbox.hidden = false;
-    document.body.style.overflow = 'hidden'; // 预览时锁定背景滚动
+    document.body.style.overflow = 'hidden';
   };
 
   const openLightbox = (item) => {
-    currentList = getFiltered();
+    currentList = filteredList;
     showLightbox(currentList.indexOf(item));
   };
 
@@ -182,10 +222,16 @@
     else if (e.key === 'ArrowRight') showLightbox((currentIndex + 1) % currentList.length);
   });
 
-  // 事件绑定
-  searchEl.addEventListener('input', () => { searchText = searchEl.value; render(); });
-  dateFromEl.addEventListener('input', () => { dateFrom = dateFromEl.value; render(); });
-  dateToEl.addEventListener('input', () => { dateTo = dateToEl.value; render(); });
+  // ==== 事件绑定（搜索加防抖） ====
+  let debounceTimer = null;
+  const debouncedRender = () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(render, 200);
+  };
+
+  searchEl.addEventListener('input', () => { searchText = searchEl.value; debouncedRender(); });
+  dateFromEl.addEventListener('input', () => { dateFrom = dateFromEl.value; debouncedRender(); });
+  dateToEl.addEventListener('input', () => { dateTo = dateToEl.value; debouncedRender(); });
   sortEl.addEventListener('change', () => { sortKey = sortEl.value; render(); });
   filterToggle.addEventListener('click', () => {
     filterPanel.hidden = !filterPanel.hidden;

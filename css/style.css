@@ -119,6 +119,7 @@ body {
   background: #0d0d0d;
   padding: 16px;
   min-height: 100vh;
+  height: auto; /* 覆盖全局 html,body{height:100%}，让 window 成为滚动容器 */
   /* 防止懒加载图片改变布局时滚动跳动/回弹 */
   overflow-anchor: none;
   overscroll-behavior-block: contain;
@@ -293,6 +294,9 @@ body {
 }
 
 /* === 全屏预览弹窗 === */
+.lightbox[hidden] {
+  display: none !important;
+}
 .lightbox {
   position: fixed;
   inset: 0;
