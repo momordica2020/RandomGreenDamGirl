@@ -1,7 +1,9 @@
 // js/image-utils.js —— 共享的图片数据逻辑（首页随机 + 图库页共用）
 (() => {
   const IMAGE_FOLDER = 'images/';
+  const THUMBNAIL_FOLDER = 'images/thumbs/';
   const IMAGES = window.IMAGES || [];
+  const IMAGE_DIMENSIONS = window.IMAGE_DIMENSIONS || {};
 
   // 解析文件名：作者-日期-标题.后缀
   const parseFileName = (filename) => {
@@ -48,12 +50,17 @@
   // 生成安全的图片地址。encodeURI 不会编码 # ? & 等保留字符，
   // 文件名里含 # 时会被浏览器当成 URL 片段导致加载失败，故用 encodeURIComponent。
   const imageUrl = (file) => IMAGE_FOLDER + encodeURIComponent(file);
+  const thumbnailUrl = (file) => THUMBNAIL_FOLDER + encodeURIComponent(file) + '.webp';
+  const imageDimensions = (file) => IMAGE_DIMENSIONS[file] || null;
 
   window.ImageData = {
     IMAGE_FOLDER,
+    THUMBNAIL_FOLDER,
     IMAGES,
     IMAGE_DATA,
     parseFileName,
     imageUrl,
+    thumbnailUrl,
+    imageDimensions,
   };
 })();

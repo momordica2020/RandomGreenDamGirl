@@ -1,6 +1,6 @@
 // js/gallery.js —— 图库页：Pinterest 风格砖墙 + 搜索 + 作者/日期/标题筛选 + 全屏预览 + 分页加载
 (() => {
-  const { IMAGE_DATA, imageUrl } = window.ImageData;
+  const { IMAGE_DATA, imageUrl, thumbnailUrl, imageDimensions } = window.ImageData;
   if (!IMAGE_DATA || !IMAGE_DATA.length) return;
 
   const gridEl = document.getElementById('galleryGrid');
@@ -14,7 +14,8 @@
   const filterToggle = document.getElementById('filterToggle');
   const authorBox = document.getElementById('authorFilters');
 
-  const PAGE_SIZE = 60; // 每次渲染的卡片数量
+  const PAGE_SIZE = 40; // 每次追加的卡片数量
+  const COLUMN_GAP = 14;
 
   // 筛选状态
   const selectedAuthors = new Set();
@@ -26,6 +27,8 @@
   // 分页状态
   let filteredList = [];
   let renderedCount = 0;
+  let columns = [];
+  let columnHeights = [];
 
   // 统计每个作者的作品数量
   const authorCount = new Map();
@@ -67,8 +70,22 @@
 
     const img = document.createElement('img');
     img.loading = 'lazy';
+    img.decoding = 'async';
+    img.fetchPriority = 'low';
     img.alt = item.title || item.author || item.file;
-    img.src = imageUrl(item.file);
+    const dimensions = imageDimensions(item.file);
+    if (dimensions) {
+      img.width = dimensions[0];
+      img.height = dimensions[1];
+    }
+
+    let fallbackTried = false;
+    img.addEventListener('error', () => {
+      if (fallbackTried) return;
+      fallbackTried = true;
+      img.src = imageUrl(item.file);
+    });
+    img.src = thumbnailUrl(item.file);
     img.addEventListener('click', () => openLightbox(item));
 
     const fig = document.createElement('figcaption');
@@ -89,6 +106,35 @@
     card.appendChild(img);
     card.appendChild(fig);
     return card;
+  };
+
+  const getColumnCount = () => {
+    const width = gridEl.clientWidth || window.innerWidth;
+    if (width <= 480) return 1;
+    if (width <= 760) return 2;
+    if (width <= 1100) return 3;
+    return 4;
+  };
+
+  const createColumns = () => {
+    const count = getColumnCount();
+    columns = [];
+    columnHeights = new Array(count).fill(0);
+    const frag = document.createDocumentFragment();
+    for (let i = 0; i < count; i++) {
+      const column = document.createElement('div');
+      column.className = 'gallery-column';
+      frag.appendChild(column);
+      columns.push(column);
+    }
+    gridEl.appendChild(frag);
+  };
+
+  const estimateCardHeight = (item, columnWidth) => {
+    const dimensions = imageDimensions(item.file);
+    const ratio = dimensions && dimensions[0] > 0 ? dimensions[1] / dimensions[0] : 1.25;
+    // 图片高度 + 卡片间距 + figcaption 的近似高度
+    return columnWidth * ratio + COLUMN_GAP + 54;
   };
 
   // 计算过滤 + 排序后的完整列表
@@ -124,14 +170,19 @@
   };
 
   // 加载下一批卡片
-  const loadMore = () => {
+  const loadMore = (batchSize = PAGE_SIZE) => {
     if (renderedCount >= filteredList.length) return;
-    const frag = document.createDocumentFragment();
-    const end = Math.min(renderedCount + PAGE_SIZE, filteredList.length);
+    const end = Math.min(renderedCount + batchSize, filteredList.length);
+    const columnWidth = (gridEl.clientWidth - COLUMN_GAP * (columns.length - 1)) / columns.length;
     for (let i = renderedCount; i < end; i++) {
-      frag.appendChild(createCard(filteredList[i]));
+      let shortest = 0;
+      for (let c = 1; c < columnHeights.length; c++) {
+        if (columnHeights[c] < columnHeights[shortest]) shortest = c;
+      }
+      const item = filteredList[i];
+      columns[shortest].appendChild(createCard(item));
+      columnHeights[shortest] += estimateCardHeight(item, columnWidth);
     }
-    gridEl.appendChild(frag);
     renderedCount = end;
     updateCount();
   };
@@ -145,9 +196,14 @@
   const render = () => {
     filteredList = getFiltered();
     gridEl.innerHTML = '';
+    columns = [];
+    columnHeights = [];
     renderedCount = 0;
     emptyEl.hidden = filteredList.length > 0;
-    if (filteredList.length > 0) loadMore();
+    if (filteredList.length > 0) {
+      createColumns();
+      loadMore();
+    }
     else countEl.textContent = `共 0 / ${IMAGE_DATA.length} 张`;
   };
 
@@ -169,6 +225,23 @@
     if (renderedCount >= filteredList.length) return;
     const scrollable = document.documentElement.scrollHeight - window.innerHeight;
     if (window.scrollY >= scrollable - 300) loadMore();
+  }, { passive: true });
+
+  // 仅在列数断点变化时重建当前已加载部分，避免普通窗口缩放时反复重排。
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (getColumnCount() === columns.length) return;
+      const loaded = renderedCount;
+      filteredList = getFiltered();
+      gridEl.innerHTML = '';
+      columns = [];
+      columnHeights = [];
+      renderedCount = 0;
+      createColumns();
+      loadMore(loaded);
+    }, 160);
   }, { passive: true });
 
   // ==== 全屏预览 ====

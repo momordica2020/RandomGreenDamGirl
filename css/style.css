@@ -119,10 +119,14 @@ body {
   background: #0d0d0d;
   padding: 16px;
   min-height: 100vh;
-  height: auto; /* 覆盖全局 html,body{height:100%}，让 window 成为滚动容器 */
-  /* 防止懒加载图片改变布局时滚动跳动/回弹 */
-  overflow-anchor: none;
-  overscroll-behavior-block: contain;
+  height: auto;
+  /*
+   * 全局 overflow-x: hidden 会把 body 的 overflow-y 计算成 auto，
+   * 导致 body 成为不滚动的滚轮事件终点。图库页恢复 body 的可见溢出，
+   * 让滚轮继续传递给 html（真正的页面滚动容器）。
+   */
+  overflow: visible;
+  overscroll-behavior-block: auto;
 }
 
 .gallery-page {
@@ -267,14 +271,20 @@ body {
   accent-color: #06c79a;
 }
 
-/* Pinterest 风格砖墙 */
+/* Pinterest 风格砖墙：由 JS 分列，追加图片时不会重排已有卡片 */
 .gallery-grid {
-  column-count: 4;
-  column-gap: 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.gallery-column {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  flex-direction: column;
+  gap: 14px;
 }
 .card {
-  break-inside: avoid;
-  margin-bottom: 14px;
   background: #161616;
   border-radius: 12px;
   overflow: hidden;
@@ -289,7 +299,7 @@ body {
   width: 100%;
   height: auto;
   display: block;
-  background: #000;
+  background: #111;
   cursor: zoom-in;
 }
 
@@ -383,17 +393,6 @@ body {
   color: #888;
   padding: 60px 0;
   font-size: 1.1rem;
-}
-
-/* 响应式列数 */
-@media (max-width: 1100px) {
-  .gallery-grid { column-count: 3; }
-}
-@media (max-width: 760px) {
-  .gallery-grid { column-count: 2; }
-}
-@media (max-width: 480px) {
-  .gallery-grid { column-count: 1; }
 }
 
 /* 
